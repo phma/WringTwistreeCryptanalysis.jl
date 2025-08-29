@@ -3,7 +3,7 @@ module WringTwistreeCryptanalysis
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId
 export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
-export clutchDiffGrow1,clutchDiffGrow,probRotateTogether
+export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
@@ -296,6 +296,16 @@ function clutch(wring::Wring,wringName::String,clutchMsgLen::Integer)
   end
   close(file)
   (statsTotal,statsTogether,buckets)
+end
+
+function clutch3Lengths(wring::Wring,wringName::String)
+  tasks=Task[]
+  push!(tasks,@spawn clutch(wring,wringName,7776))
+  push!(tasks,@spawn clutch(wring,wringName,8192))
+  push!(tasks,@spawn clutch(wring,wringName,10000))
+  for t in tasks
+    wait(t)
+  end
 end
 
 function plotClutch(wringName::String,bytes::Int)
