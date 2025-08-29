@@ -7,7 +7,6 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether
 export invProbRotateTogether,extrapolate
 export Bucket3,ins!
 
-const clutchSamples=1
 const clutchMsgLen=10000
 const clutchRounds=8
 
