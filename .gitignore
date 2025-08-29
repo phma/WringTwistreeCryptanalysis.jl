@@ -30,4 +30,5 @@ LocalPreferences.toml
 debug
 
 # Files containing plots
+*.dat
 *.svg
