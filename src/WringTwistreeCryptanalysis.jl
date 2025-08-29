@@ -7,7 +7,10 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether
 export invProbRotateTogether,extrapolate
 export Bucket3,ins!
 
-const clutchMsgLen=10000
+# clutchMsgLen is the message length for clutch cryptanalysis.
+# Three values are used: 7776, 8192, and 10000.
+# They have 0, 2, and 1 bytes untouched by mix3 in each round.
+
 const clutchRounds=8
 
 key96_0 = "Водворетраванатраведрова.Нерубидрованатраведвора!"
@@ -47,7 +50,7 @@ function match(as::Vector{UInt8},bs::Vector{UInt8})
   mapreduce(x->4-count_ones(x),+,as.⊻bs,init=0)
 end
 
-function messageArray(pt::Integer)
+function messageArray(pt::Integer,clutchMsgLen::Integer)
   ret=Vector{UInt8}(undef,clutchMsgLen)
   for i in 1:clutchMsgLen
     ret[i]=UInt8(pt&0xff)
@@ -90,8 +93,8 @@ function countPairs(ns)
   sum
 end
 
-function rotations1(wring,pt::Integer)
-  buf=messageArray(pt)
+function rotations1(wring,pt::Integer,clutchMsgLen::Integer)
+  buf=messageArray(pt,clutchMsgLen)
   rots=WringTwistree.encryptN!(wring,clutchRounds,buf)
   acc=zero(rots[1])
   for i in eachindex(rots)
@@ -101,11 +104,11 @@ function rotations1(wring,pt::Integer)
   rots
 end
 
-function rotations256(wring,pt,n::Integer)
+function rotations256(wring,pt,n::Integer,clutchMsgLen::Integer)
   ret=OffsetArray(Vector{Vector{Int64}}(undef,256),0:255)
   @threads for j in [0,128]
     for i in j:j+127
-      ret[i]=rotations1(wring,pt⊻(big(i)<<(8*n)))
+      ret[i]=rotations1(wring,pt⊻(big(i)<<(8*n)),clutchMsgLen)
     end
   end
   ret
@@ -121,14 +124,14 @@ struct Sidematch
   matches   ::Int
 end
 
-function jiggleC2(wring,pt,n,val)
-  buf=messageArray(pt⊻(big(val)<<(8*n)))
+function jiggleC2(wring,pt,n,val,clutchMsgLen::Integer)
+  buf=messageArray(pt⊻(big(val)<<(8*n)),clutchMsgLen)
   rot=WringTwistree.encryptN!(wring,2,buf)
   (buf,rot[1])
 end
 
-function clutch1(wring,pt,n)
-  rotations=rotations256(wring,pt,n)
+function clutch1(wring,pt,n,clutchMsgLen::Integer)
+  rotations=rotations256(wring,pt,n,clutchMsgLen)
   totalRotStats=Float64[]
   togetherRotStats=Float64[]
   jiggle=Jiggle[]
@@ -160,7 +163,7 @@ function clutch1(wring,pt,n)
   end
   @threads for i in eachindex(ciphertext2)
     if length(ciphertext2[i][1])==1
-      ciphertext2[i]=jiggleC2(wring,pt,n,i)
+      ciphertext2[i]=jiggleC2(wring,pt,n,i,clutchMsgLen)
     end
   end
   sidematch=Sidematch[]
@@ -172,8 +175,8 @@ function clutch1(wring,pt,n)
   (totalRotStats,togetherRotStats,sidematch,bar0)
 end
 
-function clutchDiffGrow1(wring,pt,n)
-  rotations=rotations256(wring,pt,n)
+function clutchDiffGrow1(wring,pt,n,clutchMsgLen::Integer)
+  rotations=rotations256(wring,pt,n,clutchMsgLen)
   diffs=fill(Int[],255*128)
   sum0=fill(0,clutchRounds) # count
   sum1=fill(0,clutchRounds) # total
@@ -187,8 +190,8 @@ function clutchDiffGrow1(wring,pt,n)
       r+=1
     end
     if (r>1)
-      buf0=messageArray(pt⊻(big(i)<<(8*n)))
-      buf1=messageArray(pt⊻(big(j)<<(8*n)))
+      buf0=messageArray(pt⊻(big(i)<<(8*n)),clutchMsgLen)
+      buf1=messageArray(pt⊻(big(j)<<(8*n)),clutchMsgLen)
       diffs[m]=WringTwistree.encryptN2!(wring,r,buf0,buf1)
     end
   end
@@ -211,7 +214,7 @@ function clutchDiffGrow1(wring,pt,n)
   (sum0,sum1,sum2,mean)
 end
 
-function clutch(wring::Wring,wringName::String)
+function clutch(wring::Wring,wringName::String,clutchMsgLen::Integer)
   #wringName is the short name of the Wring; it will be part of the filename
   pt1=big3Power(clutchMsgLen*8)
   statsTotal=fill(0.0,clutchRounds)
@@ -225,7 +228,7 @@ function clutch(wring::Wring,wringName::String)
   cont=true
   while cont
     n+=1
-    (tot,tog,smatch,bar0)=clutch1(wring,pt1*n,(h*n)%clutchMsgLen)
+    (tot,tog,smatch,bar0)=clutch1(wring,pt1*n,(h*n)%clutchMsgLen,clutchMsgLen)
     statsTotal=statsTotal.+tot
     statsTogether=statsTogether.+tog
     bar0Total+=bar0
@@ -350,7 +353,7 @@ function plotClutch(wringName::String,bytes::Int)
   save("clutch-decay-"*wringName*"-"*string(bytes)*".svg",dk)
 end
 
-function clutchDiffGrow(wring::Wring,iters::Int)
+function clutchDiffGrow(wring::Wring,iters::Int,clutchMsgLen::Integer)
   pt1=big3Power(clutchMsgLen*8)
   sum0s=Vector{Int}[]
   sum1s=Vector{Int}[]
