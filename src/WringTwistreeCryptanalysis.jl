@@ -1,10 +1,11 @@
 module WringTwistreeCryptanalysis
 
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
-using JSON3,SpecialFunctions,Roots
+using JSON3,SpecialFunctions,Roots,CpuId
 export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether
 export invProbRotateTogether,extrapolate
+export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
@@ -45,6 +46,28 @@ wring6_0 = keyedWring(key6_0)
 wring6_1 = keyedWring(key6_1)
 wring6_2 = keyedWring(key6_2)
 wring6_3 = keyedWring(key6_3)
+
+function measureSpeedWring(numBytes::Integer,parseq::Symbol=:default)
+  wring=keyedWring("")
+  buf=rand(UInt8,numBytes)
+  startcc=cpucycle()
+  startns=time_ns()
+  encrypt!(wring,buf,parseq)
+  finishcc=cpucycle()
+  finishns=time_ns()
+  (finishcc-startcc)/numBytes,(finishns-startns)/numBytes
+end
+
+function measureSpeedTwistree(numBytes::Integer,parseq::Symbol=:default)
+  tw=keyedTwistree("")
+  buf=rand(UInt8,numBytes)
+  startcc=cpucycle()
+  startns=time_ns()
+  hash!(tw,buf,parseq)
+  finishcc=cpucycle()
+  finishns=time_ns()
+  (finishcc-startcc)/numBytes,(finishns-startns)/numBytes
+end
 
 function match(as::Vector{UInt8},bs::Vector{UInt8})
   mapreduce(x->4-count_ones(x),+,as.⊻bs,init=0)

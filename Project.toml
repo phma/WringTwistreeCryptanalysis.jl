@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+CpuId = "adafc99b-e345-5852-983c-f28acb93d879"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
@@ -13,6 +14,7 @@ WringTwistree = "b97f57d3-c4d5-419f-b8d9-90964b0843a1"
 
 [compat]
 CairoMakie = "0.15.6"
+CpuId = "0.3.1"
 JSON3 = "1.14.3"
 OffsetArrays = "1.17.0"
 Roots = "2.2.10"
