@@ -67,13 +67,20 @@ end
 
 function measureSpeedTwistree(numBytes::Integer,parseq::Symbol=:default)
   tw=keyedTwistree("")
+  if numBytes>0 && numBytes<16777216
+    numTimes=33554432÷(numBytes+256)
+  else
+    numTimes=1
+  end
   buf=rand(UInt8,numBytes)
   startcc=cpucycle()
   startns=time_ns()
-  hash!(tw,buf,parseq)
+  for i in 1:numTimes
+    hash!(tw,buf,parseq)
+  end
   finishcc=cpucycle()
   finishns=time_ns()
-  (finishcc-startcc)/numBytes,(finishns-startns)/numBytes
+  (finishcc-startcc)/numBytes/numTimes,(finishns-startns)/numBytes/numTimes
 end
 
 function match(as::Vector{UInt8},bs::Vector{UInt8})
