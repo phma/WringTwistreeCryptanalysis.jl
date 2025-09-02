@@ -49,13 +49,20 @@ wring6_3 = keyedWring(key6_3)
 
 function measureSpeedWring(numBytes::Integer,parseq::Symbol=:default)
   wring=keyedWring("")
+  if numBytes>0 && numBytes<1048576
+    numTimes=2097152÷numBytes
+  else
+    numTimes=1
+  end
   buf=rand(UInt8,numBytes)
   startcc=cpucycle()
   startns=time_ns()
-  encrypt!(wring,buf,parseq)
+  for i in 1:numTimes
+    encrypt!(wring,buf,parseq)
+  end
   finishcc=cpucycle()
   finishns=time_ns()
-  (finishcc-startcc)/numBytes,(finishns-startns)/numBytes
+  (finishcc-startcc)/numBytes/numTimes,(finishns-startns)/numBytes/numTimes
 end
 
 function measureSpeedTwistree(numBytes::Integer,parseq::Symbol=:default)
