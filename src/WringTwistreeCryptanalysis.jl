@@ -478,4 +478,10 @@ function extrapolate()
   end
 end
 
+# Cryptanalysis of Twistree
+
+function roundCompress!(tw::Twistree,buf::Vector{UInt8},sboxalt::Integer)
+  WringTwistree.Compress.roundCompress!(tw.sbox,buf,sboxalt)
+end
+
 end # module WringTwistreeCryptanalysis
