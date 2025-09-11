@@ -180,7 +180,7 @@ function jiggleC2(wring,pt,n,val,clutchMsgLen::Integer)
   (buf,rot[1])
 end
 
-function clutch1(wring,pt,n,clutchMsgLen::Integer)
+function clutch1(wring::Wring,pt::Integer,n::Integer,clutchMsgLen::Integer)
   rotations=rotations256(wring,pt,n,clutchMsgLen)
   totalRotStats=Float64[]
   togetherRotStats=Float64[]
