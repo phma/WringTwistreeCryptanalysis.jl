@@ -143,7 +143,7 @@ function countPairs(ns)
   sum
 end
 
-function rotations1(wring,pt::Integer,clutchMsgLen::Integer)
+function rotations1(wring::Wring,pt::Integer,clutchMsgLen::Integer)
   buf=messageArray(pt,clutchMsgLen)
   rots=WringTwistree.encryptN!(wring,clutchRounds,buf)
   acc=zero(rots[1])
@@ -154,7 +154,7 @@ function rotations1(wring,pt::Integer,clutchMsgLen::Integer)
   rots
 end
 
-function rotations256(wring,pt,n::Integer,clutchMsgLen::Integer)
+function rotations256(wring::Wring,pt::Integer,n::Integer,clutchMsgLen::Integer)
   ret=OffsetArray(Vector{Vector{Int64}}(undef,256),0:255)
   @threads for j in [0,128]
     for i in j:j+127
