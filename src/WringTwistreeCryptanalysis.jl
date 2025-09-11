@@ -7,6 +7,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
+export roundCompress1,roundCompress256
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -482,6 +483,21 @@ end
 
 function roundCompress!(tw::Twistree,buf::Vector{UInt8},sboxalt::Integer)
   WringTwistree.Compress.roundCompress!(tw.sbox,buf,sboxalt)
+end
+
+function roundCompress1(tw::Twistree,pt::Integer,blockLen::Integer,sboxalt::Integer)
+  buf=messageArray(pt,blockLen)
+  nOnes=roundCompress!(tw,buf,sboxalt)
+  (nOnes,buf)
+end
+
+function roundCompress256(tw::Twistree,pt::Integer,n::Integer,
+                          blockLen::Integer,sboxalt::Integer)
+  ret=OffsetArray(fill((0,[0x0]),256),0:255)
+  @threads for i in 0:255
+    ret[i]=roundCompress1(tw,pt⊻(big(i)<<(8*n)),blockLen,sboxalt)
+  end
+  ret
 end
 
 end # module WringTwistreeCryptanalysis
