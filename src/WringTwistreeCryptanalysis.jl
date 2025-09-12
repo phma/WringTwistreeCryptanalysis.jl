@@ -512,4 +512,10 @@ function pairdiffs(comps::OffsetVector{Tuple{Int,Vector{UInt8}}})
   diffs
 end
 
+CumDiffs=Vector{Vector{Tuple{Int,OffsetVector{Int}}}}
+# First index is the byte index within the input block (1-96)
+# Second index is the difference at that byte (1-255)
+# Int is the count of pairs with that difference at that byte
+# Third index is the bit index, and Int is the total difference
+
 end # module WringTwistreeCryptanalysis
