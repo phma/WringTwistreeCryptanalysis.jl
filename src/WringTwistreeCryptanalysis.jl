@@ -7,7 +7,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
-export roundCompress1,roundCompress256,pairdiffs,cumulate!
+export roundCompress1,roundCompress256,pairdiffs,cumulate!,diffTwistreeLen
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -540,6 +540,27 @@ function cumulate!(cd::CumDiffs,byteIndex::Integer,diffs::Vector{Tuple{UInt8,Vec
       cd[byteIndex][indif].ones[i]+=(d[2][i÷8+1]>>(i%8))&1
     end
   end
+end
+
+"""
+    diffTwistreeLen(tw::Twistree,len::Integer)
+
+Differentially cryptanalyzes one round of Twistree, with the input being of the
+specified length, which must be a multiple of 4 in the interval (32,96].
+"""
+function diffTwistreeLen(tw::Twistree,len::Integer)
+  @assert len>32 && len<=96 && len%4==0
+  pt1=big3Power(len*8)
+  cd0=CumDiffs()
+  cd1=CumDiffs()
+  h=WringTwistree.findMaxOrder(len)
+  for i in 1:2048
+    pt=i*pt1
+    byteIndex=(i*h)%len+1
+    cumulate!(cd0,byteIndex,pairdiffs(roundCompress256(tw,pt,byteIndex,len,0)))
+    cumulate!(cd1,byteIndex,pairdiffs(roundCompress256(tw,pt,byteIndex,len,1)))
+  end
+  cd0,cd1
 end
 
 end # module WringTwistreeCryptanalysis
