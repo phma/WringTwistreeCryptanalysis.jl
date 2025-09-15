@@ -7,7 +7,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
-export roundCompress1,roundCompress256,pairdiffs
+export roundCompress1,roundCompress256,pairdiffs,cumulate!
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -512,10 +512,34 @@ function pairdiffs(comps::OffsetVector{Tuple{Int,Vector{UInt8}}})
   diffs
 end
 
-CumDiffs=Vector{Vector{Tuple{Int,OffsetVector{Int}}}}
+mutable struct Diff1
+  count	::Int32
+  ones	::OffsetVector{Int32}
+end
+
+CumDiffs=Vector{Vector{Diff1}}
 # First index is the byte index within the input block (1-96)
 # Second index is the difference at that byte (1-255)
 # Int is the count of pairs with that difference at that byte
 # Third index is the bit index, and Int is the total difference
+
+function cumulate!(cd::CumDiffs,byteIndex::Integer,diffs::Vector{Tuple{UInt8,Vector{UInt8}}})
+  while length(cd)<byteIndex
+    push!(cd,Diff1[])
+  end
+  while length(cd[byteIndex])<255
+    push!(cd[byteIndex],Diff1(0,OffsetVector(Int[],-1)))
+  end
+  for d in diffs
+    indif=d[1] # indif is never 0
+    cd[byteIndex][indif].count+=1
+    while length(cd[byteIndex][indif].ones)<8*length(d[2])
+      push!(cd[byteIndex][indif].ones,0)
+    end
+    for i in 0:length(d[2])*8-1
+      cd[byteIndex][indif].ones[i]+=(d[2][i÷8+1]>>(i%8))&1
+    end
+  end
+end
 
 end # module WringTwistreeCryptanalysis
