@@ -556,9 +556,9 @@ function diffTwistreeLen(tw::Twistree,len::Integer)
   h=WringTwistree.findMaxOrder(len)
   for i in 1:2048
     pt=i*pt1
-    byteIndex=(i*h)%len+1
-    cumulate!(cd0,byteIndex,pairdiffs(roundCompress256(tw,pt,byteIndex,len,0)))
-    cumulate!(cd1,byteIndex,pairdiffs(roundCompress256(tw,pt,byteIndex,len,1)))
+    byteIndex=(i*h)%len
+    cumulate!(cd0,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,0)))
+    cumulate!(cd1,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,1)))
   end
   cd0,cd1
 end
