@@ -7,7 +7,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
-export roundCompress1,roundCompress256,round2Compress1,round2Compress256
+export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
@@ -527,6 +527,27 @@ function pairdiffs(comps::OffsetVector{Tuple{Int,Vector{UInt8}}})
     end
   end
   diffs
+end
+
+"""
+    round2Stats(comps::OffsetVector{Tuple{Int,Int,Vector{UInt8}}})
+
+Estimate from the output of `round2Compress256` the probability that two blocks
+that differ in one byte and are passed through two rounds are rotated by the
+same amount in the first round and in both rounds.
+"""
+function round2Stats(comps::OffsetVector{Tuple{Int,Int,Vector{UInt8}}})
+  round1same=round2same=0
+  for i in eachindex(comps)
+    for j in eachindex(comps)
+      if i<j
+	round1same+=comps[i][1]==comps[j][1]
+	round2same+=comps[i][1]==comps[j][1] && comps[i][2]==comps[j][2]
+      end
+    end
+  end
+  totalPairs=length(comps)*(length(comps)-1)÷2
+  (round1same/totalPairs,round2same/totalPairs)
 end
 
 mutable struct Diff1
