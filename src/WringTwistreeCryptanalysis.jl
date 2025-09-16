@@ -7,7 +7,8 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
-export roundCompress1,roundCompress256,pairdiffs,cumulate!,diffTwistreeLen
+export roundCompress1,roundCompress256,round2Compress1,round2Compress256
+export pairdiffs,cumulate!,diffTwistreeLen
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -491,11 +492,27 @@ function roundCompress1(tw::Twistree,pt::Integer,blockLen::Integer,sboxalt::Inte
   (nOnes,buf)
 end
 
+function round2Compress1(tw::Twistree,pt::Integer,blockLen::Integer,sboxalt::Integer)
+  buf=messageArray(pt,blockLen)
+  nOnes1=roundCompress!(tw,buf,sboxalt)
+  nOnes2=roundCompress!(tw,buf,sboxalt)
+  (nOnes1,nOnes2,buf)
+end
+
 function roundCompress256(tw::Twistree,pt::Integer,n::Integer,
-                          blockLen::Integer,sboxalt::Integer)
+			  blockLen::Integer,sboxalt::Integer)
   ret=OffsetArray(fill((0,[0x0]),256),0:255)
   @threads for i in 0:255
     ret[i]=roundCompress1(tw,pt⊻(big(i)<<(8*n)),blockLen,sboxalt)
+  end
+  ret
+end
+
+function round2Compress256(tw::Twistree,pt::Integer,n::Integer,
+			   blockLen::Integer,sboxalt::Integer)
+  ret=OffsetArray(fill((0,0,[0x0]),256),0:255)
+  @threads for i in 0:255
+    ret[i]=round2Compress1(tw,pt⊻(big(i)<<(8*n)),blockLen,sboxalt)
   end
   ret
 end
