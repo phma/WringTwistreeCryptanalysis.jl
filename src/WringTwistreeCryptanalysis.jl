@@ -529,6 +529,18 @@ function pairdiffs(comps::OffsetVector{Tuple{Int,Vector{UInt8}}})
   diffs
 end
 
+function pairdiffs(comps::OffsetVector{Tuple{Int,Int,Vector{UInt8}}})
+  diffs=Tuple{UInt8,Vector{UInt8}}[]
+  for i in eachindex(comps)
+    for j in eachindex(comps)
+      if i<j && comps[i][1]==comps[j][1] && comps[i][2]==comps[j][2]
+        push!(diffs,(UInt8((i⊻j)&255),comps[i][3].⊻comps[j][3]))
+      end
+    end
+  end
+  diffs
+end
+
 """
     round2Stats(comps::OffsetVector{Tuple{Int,Int,Vector{UInt8}}})
 
