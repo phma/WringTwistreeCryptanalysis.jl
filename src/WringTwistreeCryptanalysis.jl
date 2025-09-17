@@ -8,7 +8,7 @@ export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
-export pairdiffs,cumulate!,diffTwistreeLen
+export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -609,6 +609,31 @@ function diffTwistreeLen(tw::Twistree,len::Integer)
     byteIndex=(i*h)%len
     cumulate!(cd0,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,0)))
     cumulate!(cd1,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,1)))
+    @printf "%d  \r" i
+    flush(stdout)
+  end
+  cd0,cd1
+end
+
+"""
+    diffTwistreeLen2(tw::Twistree,len::Integer)
+
+Differentially cryptanalyzes two rounds of Twistree, with the input being of the
+specified length, which must be a multiple of 4 in the interval (36,96].
+"""
+function diffTwistreeLen2(tw::Twistree,len::Integer)
+  @assert len>36 && len<=96 && len%4==0
+  pt1=big3Power(len*8)
+  cd0=CumDiffs()
+  cd1=CumDiffs()
+  h=WringTwistree.findMaxOrder(len)
+  for i in 1:16384
+    pt=i*pt1
+    byteIndex=(i*h)%len
+    rc=round2Compress256(tw,pt,byteIndex,len,0)
+    cumulate!(cd0,byteIndex+1,pairdiffs(rc))
+    rc=round2Compress256(tw,pt,byteIndex,len,1)
+    cumulate!(cd1,byteIndex+1,pairdiffs(rc))
     @printf "%d  \r" i
     flush(stdout)
   end
