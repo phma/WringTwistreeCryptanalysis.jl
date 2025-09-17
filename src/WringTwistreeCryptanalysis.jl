@@ -1,7 +1,7 @@
 module WringTwistreeCryptanalysis
 
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
-using JSON3,SpecialFunctions,Roots,CpuId
+using JSON3,SpecialFunctions,Roots,CpuId,Printf
 export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
@@ -609,6 +609,8 @@ function diffTwistreeLen(tw::Twistree,len::Integer)
     byteIndex=(i*h)%len
     cumulate!(cd0,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,0)))
     cumulate!(cd1,byteIndex+1,pairdiffs(roundCompress256(tw,pt,byteIndex,len,1)))
+    @printf "%d  \r" i
+    flush(stdout)
   end
   cd0,cd1
 end
