@@ -627,17 +627,25 @@ function diffTwistreeLen2(tw::Twistree,len::Integer)
   cd0=CumDiffs()
   cd1=CumDiffs()
   h=WringTwistree.findMaxOrder(len)
-  for i in 1:16384
+  round1same0=round1same1=round2same0=round2same1=0
+  iters=16384
+  for i in 1:iters
     pt=i*pt1
     byteIndex=(i*h)%len
     rc=round2Compress256(tw,pt,byteIndex,len,0)
     cumulate!(cd0,byteIndex+1,pairdiffs(rc))
+    r1s,r2s=round2Stats(rc)
+    round1same0+=r1s
+    round2same0+=r2s
     rc=round2Compress256(tw,pt,byteIndex,len,1)
     cumulate!(cd1,byteIndex+1,pairdiffs(rc))
+    r1s,r2s=round2Stats(rc)
+    round1same1+=r1s
+    round2same1+=r2s
     @printf "%d  \r" i
     flush(stdout)
   end
-  cd0,cd1
+  ([round1same0,round2same0,round1same1,round2same1]./iters,[cd0,cd1])
 end
 
 end # module WringTwistreeCryptanalysis
