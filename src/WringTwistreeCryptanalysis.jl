@@ -593,6 +593,32 @@ function cumulate!(cd::CumDiffs,byteIndex::Integer,diffs::Vector{Tuple{UInt8,Vec
 end
 
 """
+    normalize(d::Diff1)
+
+Turn the counts in `d` into numbers in [-1,1], where 1 means always the same,
+0 means different half the time, and -1 means always different.
+"""
+function normalize(d::Diff1)
+  map(x->1-2*x/d.count,d.ones)
+end
+
+"""
+    normalize(cd::CumDiffs)
+
+Normalize all the `Diff1`s in `cd`.
+"""
+function normalize(cd::CumDiffs)
+  nd=Vector{OffsetVector{Float64}}[]
+  for i in cd
+    push!(nd,OffsetVector{Float64}[])
+    for j in i
+      push!(nd[end],normalize(j))
+    end
+  end
+  nd
+end
+
+"""
     diffTwistreeLen(tw::Twistree,len::Integer)
 
 Differentially cryptanalyzes one round of Twistree, with the input being of the
