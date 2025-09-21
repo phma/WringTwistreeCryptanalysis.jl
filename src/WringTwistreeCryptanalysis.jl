@@ -2,6 +2,7 @@ module WringTwistreeCryptanalysis
 
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
+import OffsetArrays:Origin
 export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
@@ -62,6 +63,10 @@ tw6_1 = keyedTwistree(key6_1)
 tw6_2 = keyedTwistree(key6_2)
 tw6_3 = keyedTwistree(key6_3)
 
+function big3Power(n::Integer)
+  big(3)^(n*53÷84)
+end
+
 function measureSpeedWring(numBytes::Integer,parseq::Symbol=:default)
   wring=keyedWring("")
   if numBytes>0 && numBytes<1048576
@@ -111,6 +116,38 @@ function messageArray(pt::Integer,clutchMsgLen::Integer)
   ret
 end
 
+"""
+    powerTransform(buf::OffsetVector{<:Integer})
+
+Takes a vector Boolean function and transforms it so that the constant term
+is in [0], the linear terms are in [1],[2],[4],[8],..., the quadratic terms
+are in [3],[5],[6],[9],[10],[12],..., and so on. I don't know what this is
+called. It seems to be a variant of the pseudo-Hadamard transform.
+"""
+function powerTransform(buf::OffsetVector{<:Integer})
+  tmp0=copy(buf)
+  tmp1=copy(buf)
+  sz=length(buf)
+  h=sz÷2
+  if ispow2(sz) && Origin(buf)==Origin((0,))
+    while h>0
+      for i in 0:sz-1
+	j=i⊻h
+	if i>j
+	  @inbounds tmp1[i]=tmp0[j]⊻tmp0[i]
+	else
+	  @inbounds tmp1[i]=tmp0[i]
+	end
+      end
+      tmp0,tmp1=tmp1,tmp0
+      h÷=2
+    end
+  end
+  tmp0
+end
+
+# Clutch cryptanalysis of Wring
+
 struct Bucket3 # Holds up to 3 distinct integers
   cont::Vector{Int}
 end
@@ -124,10 +161,6 @@ end
 
 function incomplete(b::Bucket3)
   length(b.cont)>0 && length(b.cont)<3
-end
-
-function big3Power(n::Integer)
-  big(3)^(n*53÷84)
 end
 
 function countPairs(ns)
