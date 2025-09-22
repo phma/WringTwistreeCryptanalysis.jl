@@ -7,7 +7,7 @@ export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
-export Bucket3,ins!,powerSpectrum
+export Bucket3,ins!,powerSpectrum,nonlinearity
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 
@@ -157,6 +157,8 @@ function powerSpectrum(buf::OffsetVector{<:Integer})
   end
   spectrum
 end
+
+nonlinearity(buf)=sum(powerSpectrum(buf)[2:end])
 
 # Clutch cryptanalysis of Wring
 
