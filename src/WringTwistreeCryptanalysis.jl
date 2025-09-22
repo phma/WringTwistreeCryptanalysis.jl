@@ -7,7 +7,7 @@ export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
-export Bucket3,ins!
+export Bucket3,ins!,powerSpectrum
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 
@@ -144,6 +144,18 @@ function powerTransform(buf::OffsetVector{<:Integer})
     end
   end
   tmp0
+end
+
+function powerSpectrum(buf::OffsetVector{<:Integer})
+  # "power" means exponentiation, not energy per time.
+  spectrum=OffsetVector(fill(0,count_ones(length(buf)-1)+1),-1)
+  pt=powerTransform(buf)
+  for i in eachindex(pt)
+    if pt[i]!=0
+      spectrum[count_ones(i)]+=1
+    end
+  end
+  spectrum
 end
 
 # Clutch cryptanalysis of Wring
