@@ -7,7 +7,7 @@ export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
-export Bucket3,ins!,powerSpectrum,nonlinearity
+export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 
@@ -159,6 +159,32 @@ function powerSpectrum(buf::OffsetVector{<:Integer})
 end
 
 nonlinearity(buf)=sum(powerSpectrum(buf)[2:end])
+
+# Cryptanalysis of the key schedule
+
+"""
+    listLinearPermutations()
+
+Lists all the linear permutations that `permut8!` can do. There are 1083 out of
+1344 linear permutations of 8 things, which is between 3.3% and 1/30 of all
+32768 permutations that `permut8!` can do.
+"""
+function listLinearPermutations()
+  cnt=0
+  for i in 0:32767
+    ys=OffsetVector([0,1,2,3,4,5,6,7],-1)
+    WringTwistree.Sboxes.Permute.permut8!(ys,0,i)
+    if nonlinearity(ys)==0
+      cnt+=1
+      @printf "%5d: [" i
+      for j in 0:6
+	@printf "%d," ys[j]
+      end
+      @printf "%d]\n" ys[7]
+    end
+  end
+  cnt
+end
 
 # Clutch cryptanalysis of Wring
 
