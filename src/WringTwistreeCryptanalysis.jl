@@ -744,7 +744,7 @@ function diffTwistreeLen2(tw::Twistree,len::Integer)
     @printf "%d  \r" i
     flush(stdout)
   end
-  ([round1same0,round2same0,round1same1,round2same1]./iters,[cd0,cd1])
+  ([round1same0,round2same0,round1same1,round2same1]./iters,[normalize(cd0),normalize(cd1)])
 end
 
 end # module WringTwistreeCryptanalysis
