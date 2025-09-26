@@ -3,7 +3,7 @@ module WringTwistreeCryptanalysis
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
 import OffsetArrays:Origin
-export big3Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
+export big3Power,big5Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
@@ -65,6 +65,10 @@ tw6_3 = keyedTwistree(key6_3)
 
 function big3Power(n::Integer)
   big(3)^(n*53÷84)
+end
+
+function big5Power(n::Integer)
+  big(5)^(n*146÷339)
 end
 
 function measureSpeedWring(numBytes::Integer,parseq::Symbol=:default)
