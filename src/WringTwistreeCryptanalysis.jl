@@ -726,29 +726,44 @@ specified length, which must be a multiple of 4 in the interval (36,96].
 """
 function diffTwistreeLen2(tw::Twistree,len::Integer)
   @assert len>36 && len<=96 && len%4==0
-  pt1=big3Power(len*8)
-  cd0=CumDiffs()
-  cd1=CumDiffs()
+  pt1a=big3Power(len*8)
+  pt1b=big5Power(len*8)
+  cd0a=CumDiffs()
+  cd1a=CumDiffs()
+  cd0b=CumDiffs()
+  cd1b=CumDiffs()
   h=WringTwistree.findMaxOrder(len)
   round1same0=round1same1=round2same0=round2same1=0
   iters=16384
   for i in 1:iters
-    pt=i*pt1
+    pta=i*pt1a		# 0x9669 is so that the two plaintexts
+    ptb=(i+0x9669)*pt1b # don't end in many zeros at the same time
     byteIndex=(i*h)%len
-    rc=round2Compress256(tw,pt,byteIndex,len,0)
-    cumulate!(cd0,byteIndex+1,pairdiffs(rc))
+    rc=round2Compress256(tw,pta,byteIndex,len,0)
+    cumulate!(cd0a,byteIndex+1,pairdiffs(rc))
     r1s,r2s=round2Stats(rc)
     round1same0+=r1s
     round2same0+=r2s
-    rc=round2Compress256(tw,pt,byteIndex,len,1)
-    cumulate!(cd1,byteIndex+1,pairdiffs(rc))
+    rc=round2Compress256(tw,ptb,byteIndex,len,0)
+    cumulate!(cd0b,byteIndex+1,pairdiffs(rc))
+    r1s,r2s=round2Stats(rc)
+    round1same0+=r1s
+    round2same0+=r2s
+    rc=round2Compress256(tw,pta,byteIndex,len,1)
+    cumulate!(cd1a,byteIndex+1,pairdiffs(rc))
+    r1s,r2s=round2Stats(rc)
+    round1same1+=r1s
+    round2same1+=r2s
+    rc=round2Compress256(tw,ptb,byteIndex,len,1)
+    cumulate!(cd1b,byteIndex+1,pairdiffs(rc))
     r1s,r2s=round2Stats(rc)
     round1same1+=r1s
     round2same1+=r2s
     @printf "%d  \r" i
     flush(stdout)
   end
-  ([round1same0,round2same0,round1same1,round2same1]./iters,[normalize(cd0),normalize(cd1)])
+  ([round1same0,round2same0,round1same1,round2same1]./(2*iters),
+   [normalize(cd0a) normalize(cd0b);normalize(cd1a) normalize(cd1b)])
 end
 
 end # module WringTwistreeCryptanalysis
