@@ -561,6 +561,46 @@ function extrapolate()
   end
 end
 
+###########################################################
+# Differential cryptanalysis of Wring with small messages #
+###########################################################
+
+# Small messages range from 3 to 27 bytes. It is pointless to cryptanalyze Wring
+# with a one-byte message, as there are almost as many distinct keys (2^1536) as
+# invertible functions from a byte to a byte (256!≈2^1684). The smallest message
+# on which mix3 operates is 3 bytes, so that's where I start. This range
+# includes 8 and 16 bytes, which are common block sizes of block ciphers.
+
+"""
+    mutable struct Diff1
+
+Used in cryptanalysis of both small-message Wring and Twistree. `count` is the
+number of differences accumulated; `ones`, which starts at [0], has as many
+elements as there are bits in the differences. So if you have accumulated 513
+differences of three bytes, `count` would be 513, and `ones` would be a vector
+with indices from 0 to 23.
+"""
+mutable struct Diff1
+  count	::Int32
+  ones	::OffsetVector{Int32}
+end
+
+function smallDiffsOneBit(wring::Wring,bytes::Int,bit::Int)
+  pt1=big3Power(8*bytes)
+  diff=Diff1(2048,OffsetVector(fill(0,bytes*8),-1))
+  for n in 1:diff.count
+    buf0=messageArray(pt1*n,bytes)
+    buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
+    encrypt!(wring,buf0)
+    encrypt!(wring,buf1)
+    buf0=buf0.⊻buf1
+    for i in eachindex(diff.ones)
+      diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
+    end
+  end
+  diff
+end
+
 #############################
 # Cryptanalysis of Twistree #
 #############################
@@ -643,11 +683,6 @@ function round2Stats(comps::OffsetVector{Tuple{Int,Int,Vector{UInt8}}})
   end
   totalPairs=length(comps)*(length(comps)-1)÷2
   (round1same/totalPairs,round2same/totalPairs)
-end
-
-mutable struct Diff1
-  count	::Int32
-  ones	::OffsetVector{Int32}
 end
 
 CumDiffs=Vector{Vector{Diff1}}
