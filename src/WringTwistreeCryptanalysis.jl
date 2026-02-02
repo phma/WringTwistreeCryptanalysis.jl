@@ -763,7 +763,8 @@ function diffTwistreeLen2(tw::Twistree,len::Integer)
     flush(stdout)
   end
   ([round1same0,round2same0,round1same1,round2same1]./(2*iters),
-   [normalize(cd0a) normalize(cd0b);normalize(cd1a) normalize(cd1b)])
+   reshape([normalize(cd0a),normalize(cd1a),normalize(cd0b),normalize(cd1b)],2,2))
+  #normalize(cd0a)
 end
 
 end # module WringTwistreeCryptanalysis
