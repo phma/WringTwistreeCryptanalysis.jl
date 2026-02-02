@@ -164,7 +164,9 @@ end
 
 nonlinearity(buf)=sum(powerSpectrum(buf)[2:end])
 
-# Cryptanalysis of the key schedule
+#####################################
+# Cryptanalysis of the key schedule #
+#####################################
 
 """
     listLinearPermutations()
@@ -190,7 +192,9 @@ function listLinearPermutations()
   cnt
 end
 
-# Clutch cryptanalysis of Wring
+#################################
+# Clutch cryptanalysis of Wring #
+#################################
 
 struct Bucket3 # Holds up to 3 distinct integers
   cont::Vector{Int}
@@ -557,7 +561,9 @@ function extrapolate()
   end
 end
 
-# Cryptanalysis of Twistree
+#############################
+# Cryptanalysis of Twistree #
+#############################
 
 function roundCompress!(tw::Twistree,buf::Vector{UInt8},sboxalt::Integer)
   WringTwistree.Compress.roundCompress!(tw.sbox,buf,sboxalt)
