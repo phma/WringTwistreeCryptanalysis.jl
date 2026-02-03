@@ -591,8 +591,8 @@ function smallDiffsOneBit(wring::Wring,bytes::Int,bit::Int)
   for n in 1:diff.count
     buf0=messageArray(pt1*n,bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
-    encrypt!(wring,buf0)
-    encrypt!(wring,buf1)
+    WringTwistree.encryptN!(wring,1,buf0)
+    WringTwistree.encryptN!(wring,1,buf1)
     buf0=buf0.⊻buf1
     for i in eachindex(diff.ones)
       diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
