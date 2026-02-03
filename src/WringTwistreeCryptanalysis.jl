@@ -585,12 +585,28 @@ mutable struct Diff1
   ones	::OffsetVector{Int32}
 end
 
-function smallDiffsOneBit(wring::Wring,bytes::Int,bit::Int)
+function smallDiffsOneBit(wring::Wring,bytes::Integer,bit::Integer)
   pt1=big3Power(8*bytes)
   diff=Diff1(2048,OffsetVector(fill(0,bytes*8),-1))
   for n in 1:diff.count
     buf0=messageArray(pt1*n,bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
+    WringTwistree.encryptN!(wring,1,buf0)
+    WringTwistree.encryptN!(wring,1,buf1)
+    buf0=buf0.⊻buf1
+    for i in eachindex(diff.ones)
+      diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
+    end
+  end
+  diff
+end
+
+function smallDiffsTwoBits(wring::Wring,bytes::Integer,bit0::Integer,bit1::Integer)
+  pt1=big3Power(8*bytes)
+  diff=Diff1(2048,OffsetVector(fill(0,bytes*8),-1))
+  for n in 1:diff.count
+    buf0=messageArray(pt1*n⊻(big(1)<<bit0),bytes)
+    buf1=messageArray(pt1*n⊻(big(1)<<bit1),bytes)
     WringTwistree.encryptN!(wring,1,buf0)
     WringTwistree.encryptN!(wring,1,buf1)
     buf0=buf0.⊻buf1
