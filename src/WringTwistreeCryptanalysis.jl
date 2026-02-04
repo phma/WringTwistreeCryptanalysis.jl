@@ -172,25 +172,20 @@ nonlinearity(buf)=sum(powerSpectrum(buf)[2:end])
 """
     listLinearPermutations()
 
-Lists all the linear permutations that `permut8!` can do. There are 1083 out of
-1344 linear permutations of 8 things, which is between 3.3% and 1/30 of all
+Lists the indices of linear permutations that `permut8!` can do. There are 1083
+out of 1344 linear permutations of 8 things, which is between 3.3% and 1/30 of all
 32768 permutations that `permut8!` can do.
 """
 function listLinearPermutations()
-  cnt=0
+  ret=OffsetVector(Int16[],-1)
   for i in 0:32767
     ys=OffsetVector([0,1,2,3,4,5,6,7],-1)
     WringTwistree.Sboxes.Permute.permut8!(ys,0,i)
     if nonlinearity(ys)==0
-      cnt+=1
-      @printf "%5d: [" i
-      for j in 0:6
-	@printf "%d," ys[j]
-      end
-      @printf "%d]\n" ys[7]
+      push!(ret,i)
     end
   end
-  cnt
+  ret
 end
 
 #################################
