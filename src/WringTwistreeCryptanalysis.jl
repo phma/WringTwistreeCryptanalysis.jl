@@ -3,6 +3,7 @@ module WringTwistreeCryptanalysis
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
 import OffsetArrays:Origin
+import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 export big3Power,big5Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
@@ -228,7 +229,7 @@ end
 
 function rotations1(wring::Wring,pt::Integer,clutchMsgLen::Integer)
   buf=messageArray(pt,clutchMsgLen)
-  rots=WringTwistree.encryptN!(wring,clutchRounds,buf)
+  rots=encryptN!(wring,clutchRounds,buf)
   acc=zero(rots[1])
   for i in eachindex(rots)
     acc=(acc+rots[i])%(8*clutchMsgLen)
@@ -259,7 +260,7 @@ end
 
 function jiggleC2(wring,pt,n,val,clutchMsgLen::Integer)
   buf=messageArray(pt⊻(big(val)<<(8*n)),clutchMsgLen)
-  rot=WringTwistree.encryptN!(wring,2,buf)
+  rot=encryptN!(wring,2,buf)
   (buf,rot[1])
 end
 
@@ -325,7 +326,7 @@ function clutchDiffGrow1(wring,pt,n,clutchMsgLen::Integer)
     if (r>1)
       buf0=messageArray(pt⊻(big(i)<<(8*n)),clutchMsgLen)
       buf1=messageArray(pt⊻(big(j)<<(8*n)),clutchMsgLen)
-      diffs[m]=WringTwistree.encryptN2!(wring,r,buf0,buf1)
+      diffs[m]=encryptN2!(wring,r,buf0,buf1)
     end
   end
   for m in 1:(255*128)
@@ -356,7 +357,7 @@ function clutch(wring::Wring,wringName::String,clutchMsgLen::Integer)
   sideways=Int[]
   matches=Int[]
   buckets=Dict{Int,Bucket3}()
-  h=WringTwistree.findMaxOrder(clutchMsgLen)
+  h=findMaxOrder(clutchMsgLen)
   n=0
   cont=true
   while cont
@@ -501,7 +502,7 @@ function clutchDiffGrow(wring::Wring,iters::Int,clutchMsgLen::Integer)
   sum0s=Vector{Int}[]
   sum1s=Vector{Int}[]
   mean=Float64[]
-  h=WringTwistree.findMaxOrder(clutchMsgLen)
+  h=findMaxOrder(clutchMsgLen)
   for n in 1:iters
     (sum0,sum1,sum2,mean1)=clutchDiffGrow1(wring,pt1*n,(h*n)%clutchMsgLen)
     print('\r',n)
@@ -587,14 +588,24 @@ mutable struct Diff1
   ones	::OffsetVector{Int32}
 end
 
+"""
+    normalize(d::Diff1)
+
+Turn the counts in `d` into numbers in [-1,1], where 1 means always the same,
+0 means different half the time, and -1 means always different.
+"""
+function normalize(d::Diff1)
+  map(x->1-2*x/d.count,d.ones)
+end
+
 function smallDiffsOneBit(wring::Wring,bytes::Integer,bit::Integer)
   pt1=big3Power(8*bytes)
   diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
   for n in 1:diff.count
     buf0=messageArray(pt1*n,bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
-    WringTwistree.encryptN!(wring,1,buf0)
-    WringTwistree.encryptN!(wring,1,buf1)
+    encryptN!(wring,1,buf0)
+    encryptN!(wring,1,buf1)
     buf0=buf0.⊻buf1
     for i in eachindex(diff.ones)
       diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
@@ -609,8 +620,8 @@ function smallDiffsTwoBits(wring::Wring,bytes::Integer,bit0::Integer,bit1::Integ
   for n in 1:diff.count
     buf0=messageArray(pt1*n⊻(big(1)<<bit0),bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit1),bytes)
-    WringTwistree.encryptN!(wring,1,buf0)
-    WringTwistree.encryptN!(wring,1,buf1)
+    encryptN!(wring,1,buf0)
+    encryptN!(wring,1,buf1)
     buf0=buf0.⊻buf1
     for i in eachindex(diff.ones)
       diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
@@ -729,16 +740,6 @@ function cumulate!(cd::CumDiffs,byteIndex::Integer,diffs::Vector{Tuple{UInt8,Vec
 end
 
 """
-    normalize(d::Diff1)
-
-Turn the counts in `d` into numbers in [-1,1], where 1 means always the same,
-0 means different half the time, and -1 means always different.
-"""
-function normalize(d::Diff1)
-  map(x->1-2*x/d.count,d.ones)
-end
-
-"""
     normalize(cd::CumDiffs)
 
 Normalize all the `Diff1`s in `cd`.
@@ -765,7 +766,7 @@ function diffTwistreeLen(tw::Twistree,len::Integer)
   pt1=big3Power(len*8)
   cd0=CumDiffs()
   cd1=CumDiffs()
-  h=WringTwistree.findMaxOrder(len)
+  h=findMaxOrder(len)
   for i in 1:2048
     pt=i*pt1
     byteIndex=(i*h)%len
@@ -791,7 +792,7 @@ function diffTwistreeLen2(tw::Twistree,len::Integer)
   cd1a=CumDiffs()
   cd0b=CumDiffs()
   cd1b=CumDiffs()
-  h=WringTwistree.findMaxOrder(len)
+  h=findMaxOrder(len)
   round1same0=round1same1=round2same0=round2same1=0
   iters=16384
   for i in 1:iters
