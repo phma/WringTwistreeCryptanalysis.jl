@@ -2,6 +2,7 @@ module WringTwistreeCryptanalysis
 
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
+using WringTwistree.Sboxes.Permute
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 export big3Power,big5Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
@@ -180,12 +181,33 @@ function listLinearPermutations()
   ret=OffsetVector(Int16[],-1)
   for i in 0:32767
     ys=OffsetVector([0,1,2,3,4,5,6,7],-1)
-    WringTwistree.Sboxes.Permute.permut8!(ys,0,i)
+    permut8!(ys,0,i)
     if nonlinearity(ys)==0
       push!(ret,i)
     end
   end
   ret
+end
+
+linearIndices=listLinearPermutations()
+
+"""
+    mixedLinear(inds::Vector{<:Integer})
+
+Compute how nonlinear is a permutation composed of 96 linear permutations.
+The answer is, about as nonlinear as a permutation composed of arbitrary
+permutations of eight (around 240). The argument is a vector of up to
+96 integers in [0,1083).
+"""
+function mixedLinear(inds::Vector{<:Integer})
+  key=OffsetVector(UInt16[],-1)
+  for i in inds
+    push!(key,linearIndices[i])
+  end
+  while length(key)<96
+    push!(key,linearIndices[0])
+  end
+  nonlinearity(permute256(key))
 end
 
 #################################
