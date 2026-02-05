@@ -12,6 +12,7 @@ export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
+export smallDiffs
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -589,7 +590,7 @@ end
 # on which mix3 operates is 3 bytes, so that's where I start. This range
 # includes 8 and 16 bytes, which are common block sizes of block ciphers.
 
-const smallDiffsIters=1048576
+const smallDiffsIters=65536
 
 """
     mutable struct Diff1
@@ -645,6 +646,22 @@ function smallDiffsTwoBits(wring::Wring,nrond::Integer,bytes::Integer,bit0::Inte
     end
   end
   diff
+end
+
+function smallDiffs(wring::Wring,wringName::String)
+  file=open("smallDiffs-"*wringName*".dat",write=true)
+  for bytes in 0x0003:0x001b
+    for nrond in 0x0001:0x0003
+      write(file,bytes)
+      write(file,nrond)
+      for bit in 0x0000:bytes*0x8-0x1
+        @printf("%d bytes, %d rounds, bit %d\n",bytes,nrond,bit)
+        diff=normalize(smallDiffsOneBit(wring,nrond,bytes,bit))
+        write(file,diff)
+      end
+    end
+  end
+  close(file)
 end
 
 #############################
