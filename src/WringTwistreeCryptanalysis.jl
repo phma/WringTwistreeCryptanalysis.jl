@@ -6,6 +6,7 @@ using WringTwistree.Sboxes.Permute
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 import Base:+
+import WringTwistree.Mix3.yieldInterval
 export big3Power,big5Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
@@ -630,10 +631,16 @@ function normalize(d::Diff1)
   map(x->1-2*x/d.count,d.ones)
 end
 
-function smallDiffsOneBit(wring::Wring,nrond::Integer,bytes::Integer,bit::Integer)
-  pt1=big3Power(8*bytes)
+function smallDiffsOneBitWorker(
+    wring	::Wring
+  , nrond	::Integer
+  , bytes	::Integer
+  , bit		::Integer
+  , pt1		::BigInt
+  , ran		::UnitRange
+  )
   diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
-  for n in 1:diff.count
+  for n in ran
     buf0=messageArray(pt1*n,bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
     encryptN!(wring,nrond,buf0)
@@ -641,7 +648,21 @@ function smallDiffsOneBit(wring::Wring,nrond::Integer,bytes::Integer,bit::Intege
     buf0=buf0.⊻buf1
     for i in eachindex(diff.ones)
       diff.ones[i]+=(buf0[i÷8+1]>>(i%8))&1
+      if i%yieldInterval==0
+	yield
+      end
     end
+  end
+  diff
+end
+
+function smallDiffsOneBit(wring::Wring,nrond::Integer,bytes::Integer,bit::Integer)
+  pt1=big3Power(8*bytes)
+  diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
+  diffs=fill(diff,1)
+  diffs[1]=smallDiffsOneBitWorker(wring,nrond,bytes,bit,pt1,1:smallDiffsIters)
+  for d in diffs
+    diff+=d
   end
   diff
 end
