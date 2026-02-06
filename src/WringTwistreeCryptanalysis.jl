@@ -5,6 +5,7 @@ using JSON3,SpecialFunctions,Roots,CpuId,Printf
 using WringTwistree.Sboxes.Permute
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
+import Base:+
 export big3Power,big5Power,rotations1,rotations256,clutch1,match,clutch,plotClutch
 export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
@@ -604,6 +605,19 @@ with indices from 0 to 23.
 mutable struct Diff1
   count	::Int32
   ones	::OffsetVector{Int32}
+end
+
+function +(a::Diff1,b::Diff1)
+  sumvec=OffsetVector(fill(Int32(0),max(length(a.ones),length(b.ones))),-1)
+  abeg=axes(a.ones)[1][begin]
+  bbeg=axes(b.ones)[1][begin]
+  for i in eachindex(a.ones)
+    sumvec[i-abeg]+=a.ones[i]
+  end
+  for i in eachindex(b.ones)
+    sumvec[i-bbeg]+=b.ones[i]
+  end
+  Diff1(a.count+b.count,sumvec)
 end
 
 """
