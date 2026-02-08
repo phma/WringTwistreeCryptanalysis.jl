@@ -592,7 +592,7 @@ end
 # on which mix3 operates is 3 bytes, so that's where I start. This range
 # includes 8 and 16 bytes, which are common block sizes of block ciphers.
 
-const smallDiffsIters=65536
+const smallDiffsIters=59049
 
 """
     mutable struct Diff1
@@ -658,9 +658,21 @@ end
 
 function smallDiffsOneBit(wring::Wring,nrond::Integer,bytes::Integer,bit::Integer)
   pt1=big3Power(8*bytes)
+  tasks=Task[]
+  thr=nthreads()
   diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
-  diffs=fill(diff,1)
-  diffs[1]=smallDiffsOneBitWorker(wring,nrond,bytes,bit,pt1,1:smallDiffsIters)
+  diffs=fill(diff,thr)
+  lims=OffsetVector([0],-1)
+  for i in 1:thr
+    push!(lims,i*smallDiffsIters÷thr)
+  end
+  for i in 1:thr
+    push!(tasks,@spawn diffs[i]=smallDiffsOneBitWorker(
+      wring,nrond,bytes,bit,pt1,lims[i-1]+1:lims[i]))
+  end
+  for t in tasks
+    wait(t)
+  end
   for d in diffs
     diff+=d
   end
