@@ -702,6 +702,7 @@ function smallDiffs(wring::Wring,wringName::String)
       write(file,bytes)
       write(file,nrond)
       for bit in 0x0000:bytes*0x8-0x1
+        GC.gc()
         @printf("%d bytes, %d rounds, bit %d\n",bytes,nrond,bit)
         diff=normalize(smallDiffsOneBit(wring,nrond,bytes,bit))
         write(file,diff)
