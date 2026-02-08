@@ -697,18 +697,14 @@ end
 
 function smallDiffs(wring::Wring,wringName::String)
   file=open("smallDiffs-"*wringName*".dat",write=true)
-  diff=OffsetVector(Diff1[],-1)
   for bytes in 0x0003:0x001b
     for nrond in 0x0001:0x0003
       write(file,bytes)
       write(file,nrond)
-      resize!(diff,bytes*8)
-      @threads for bit in 0x0000:bytes*0x8-0x1
-        @printf("%d bytes, %d rounds, bit %d\n",bytes,nrond,bit)
-        diff[bit]=smallDiffsOneBit(wring,nrond,bytes,bit)
-      end
       for bit in 0x0000:bytes*0x8-0x1
-        write(file,normalize(diff[bit]))
+        @printf("%d bytes, %d rounds, bit %d\n",bytes,nrond,bit)
+        diff=normalize(smallDiffsOneBit(wring,nrond,bytes,bit))
+        write(file,diff)
       end
     end
   end
