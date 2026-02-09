@@ -14,7 +14,7 @@ export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
-export smallDiffs
+export smallDiffs,readDiffs1
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -710,6 +710,18 @@ function smallDiffs(wring::Wring,wringName::String)
     end
   end
   close(file)
+end
+
+function readDiffs1(file::IO)
+  bytes=read(file,UInt16)
+  nrond=read(file,UInt16)
+  diffs=OffsetArray(Array{Float64}(undef,bytes*8,bytes*8),-1,-1)
+  for i in 0:bytes*8-1
+    for j in 0:bytes*8-1
+      diffs[j,i]=read(file,Float64)
+    end
+  end
+  (bytes,nrond,diffs)
 end
 
 #############################
