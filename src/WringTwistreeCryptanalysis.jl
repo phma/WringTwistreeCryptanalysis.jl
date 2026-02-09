@@ -639,7 +639,7 @@ function smallDiffsOneBitWorker(
   , pt1		::BigInt
   , ran		::UnitRange
   )
-  diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
+  diff=Diff1(size(ran)[1],OffsetVector(fill(0,bytes*8),-1))
   for n in ran
     buf0=messageArray(pt1*n,bytes)
     buf1=messageArray(pt1*n⊻(big(1)<<bit),bytes)
@@ -660,7 +660,7 @@ function smallDiffsOneBit(wring::Wring,nrond::Integer,bytes::Integer,bit::Intege
   pt1=big3Power(8*bytes)
   tasks=Task[]
   thr=nthreads()
-  diff=Diff1(smallDiffsIters,OffsetVector(fill(0,bytes*8),-1))
+  diff=Diff1(0,OffsetVector(fill(0,bytes*8),-1))
   diffs=fill(diff,thr)
   lims=OffsetVector([0],-1)
   for i in 1:thr
