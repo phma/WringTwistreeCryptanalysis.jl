@@ -3,6 +3,7 @@ module WringTwistreeCryptanalysis
 using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
 using WringTwistree.Sboxes.Permute
+using WringTwistree.Sboxes.KeySchedule
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 import Base:+
@@ -12,6 +13,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
+export flipHighBits,nullKeySched
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 export smallDiffs,readDiffs1,readSmallDiffs
@@ -211,6 +213,26 @@ function mixedLinear(inds::Vector{<:Integer})
     push!(key,linearIndices[0])
   end
   nonlinearity(permute256(key))
+end
+
+const nullKeySched=keySchedule(UInt8[])
+
+"""
+    flipHighBits(sch::OffsetArray{UInt16},n::Integer)
+
+Flips bit 15 of each of the 96 numbers in `sch` (starting at 0) where `n` has
+a one-bit. The high bit has no effect on the permutation computed by `permute256`,
+but `reschedule!` results in other bits being changed, which do have an effect
+on the permutation.
+"""
+function flipHighBits(sch::OffsetArray{UInt16},n::Integer)
+  ret=copy(sch)
+  for i in 0:95
+    if (big(1)<<i)&n>0
+      ret[i]⊻=0x8000
+    end
+  end
+  ret
 end
 
 #################################
