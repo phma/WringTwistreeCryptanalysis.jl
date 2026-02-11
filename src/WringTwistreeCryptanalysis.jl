@@ -13,7 +13,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
-export flipHighBits,nullKeySched,diffSbox
+export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 export smallDiffs,readDiffs1,readSmallDiffs
@@ -250,6 +250,24 @@ function diffSbox(sbox::OffsetVector{UInt8})
     end
   end
   counts
+end
+
+"""
+    heatmapDataSbox(wring::Wring)
+
+Differentiate the three S-boxes of a `Wring` and their inverses and place the
+results in a matrix with blank rows and columns between them, to be plotted
+as a heat map.
+"""
+function heatmapDataSbox(wring::Wring)
+  data=zeros(Int16,767,511)
+  data[001:255,001:255]=diffSbox(wring.sbox[:,0])
+  data[257:511,001:255]=diffSbox(wring.sbox[:,1])
+  data[513:767,001:255]=diffSbox(wring.sbox[:,2])
+  data[001:255,257:511]=diffSbox(wring.invSbox[:,0])
+  data[257:511,257:511]=diffSbox(wring.invSbox[:,1])
+  data[513:767,257:511]=diffSbox(wring.invSbox[:,2])
+  data
 end
 
 #################################
