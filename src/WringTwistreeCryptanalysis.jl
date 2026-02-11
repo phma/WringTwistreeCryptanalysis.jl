@@ -13,7 +13,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
-export flipHighBits,nullKeySched
+export flipHighBits,nullKeySched,diffSbox
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 export smallDiffs,readDiffs1,readSmallDiffs
@@ -233,6 +233,23 @@ function flipHighBits(sch::OffsetArray{UInt16},n::Integer)
     end
   end
   ret
+end
+
+"""
+    diffSbox(sbox::OffsetVector{UInt8})
+
+Differentiate an 8×8 S-box. The result is a 255×255 matrix.
+"""
+function diffSbox(sbox::OffsetVector{UInt8})
+  counts=zeros(Int16,255,255)
+  for d in 1:255
+    for i in 0:255
+      if d⊻i>i
+	counts[d,sbox[i]⊻sbox[d⊻i]]+=1
+      end
+    end
+  end
+  counts
 end
 
 #################################
