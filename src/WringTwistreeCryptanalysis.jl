@@ -13,7 +13,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
-export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox,plotHeatmapSbox
+export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox,plotHeatmapSboxes
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 export smallDiffs,readAllSmallDiffs
@@ -313,6 +313,12 @@ function plotHeatmapSbox(wring::Wring,wringName::String)
   heatmap!(sbhmax,data)
   filename=@sprintf "sboxes-diff-%s.svg" wringName
   save(filename,sb)
+end
+
+function plotHeatmapSboxes()
+  for i in eachindex(wrings)
+    plotHeatmapSbox(wrings[i],keyNames[i])
+  end
 end
 
 #################################
