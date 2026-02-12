@@ -13,7 +13,7 @@ export clutchDiffGrow1,clutchDiffGrow,probRotateTogether,clutch3Lengths
 export invProbRotateTogether,extrapolate
 export measureSpeedWring,measureSpeedTwistree
 export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
-export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox
+export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox,plotHeatmapSbox
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
 export smallDiffs,readAllSmallDiffs
@@ -86,6 +86,24 @@ const keyNames=
   , "linear"
   , "3twist"
   , "3twist69"
+  ]
+
+const wrings=
+  [ wring96_0
+  , wring96_1
+  , wring96_2
+  , wring96_3
+  , wring30_0
+  , wring30_1
+  , wring30_2
+  , wring30_3
+  , wring6_0
+  , wring6_1
+  , wring6_2
+  , wring6_3
+  , WringTwistree.linearWring
+  , WringTwistree.tripleTwistWring
+  , WringTwistree.tripleTwist69Wring
   ]
 
 function big3Power(n::Integer)
@@ -286,6 +304,15 @@ function heatmapDataSbox(wring::Wring)
   data[257:511,257:511]=diffSbox(wring.invSbox[:,1])
   data[513:767,257:511]=diffSbox(wring.invSbox[:,2])
   data
+end
+
+function plotHeatmapSbox(wring::Wring,wringName::String)
+  sb=Figure(size=(1189,841))
+  sbhmax=Axis(sb[1,1])
+  data=heatmapDataSbox(wring)
+  heatmap!(sbhmax,data)
+  filename=@sprintf "sboxes-diff-%s.svg" wringName
+  save(filename,sb)
 end
 
 #################################
