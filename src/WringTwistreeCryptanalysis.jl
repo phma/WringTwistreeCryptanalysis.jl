@@ -16,7 +16,7 @@ export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
 export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
-export smallDiffs,readDiffs1,readSmallDiffs
+export smallDiffs,readAllSmallDiffs
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -69,6 +69,24 @@ tw6_0 = keyedTwistree(key6_0)
 tw6_1 = keyedTwistree(key6_1)
 tw6_2 = keyedTwistree(key6_2)
 tw6_3 = keyedTwistree(key6_3)
+
+const keyNames=
+  [ "96_0"
+  , "96_1"
+  , "96_2"
+  , "96_3"
+  , "30_0"
+  , "30_1"
+  , "30_2"
+  , "30_3"
+  , "6_0"
+  , "6_1"
+  , "6_2"
+  , "6_3"
+  , "linear"
+  , "3twist"
+  , "3twist69"
+  ]
 
 function big3Power(n::Integer)
   big(3)^(n*53÷84)
@@ -806,6 +824,16 @@ function readSmallDiffs(file::IO)
     ret[bytes,nrond]=diffs
   end
   ret
+end
+
+function readAllSmallDiffs()
+  allDiffs=Dict{String,OffsetMatrix{<:OffsetMatrix{Float64}}}()
+  for key in keyNames
+    file=open("smallDiffs-"*key*".dat","r")
+    allDiffs[key]=readSmallDiffs(file)
+    close(file)
+  end
+  allDiffs
 end
 
 #############################
