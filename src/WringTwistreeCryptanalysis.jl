@@ -880,7 +880,7 @@ function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
 	     title=(@sprintf "Wring differential cryptanalysis, %s, %d bytes" key bytes),
 	     xlabel="Output bit",
 	     ylabel="Input bit",
-	     zlabel="Probability changed")
+	     zlabel="Probability same")
   xs=0:bytes*8-1
   for inbit in 0:bytes*8-1
     zs=OffsetArrays.no_offset_view(allDiffs[key][bytes,1][:,inbit])
