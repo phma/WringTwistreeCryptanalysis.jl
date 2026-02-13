@@ -876,7 +876,11 @@ end
 function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
   # one round, as more would look like noise
   sl=Figure(size=(1189,841))
-  slax=Axis3(sl[1,1])
+  slax=Axis3(sl[1,1],
+	     title=(@sprintf "Wring differential cryptanalysis, %s, %d bytes" key bytes),
+	     xlabel="Output bit",
+	     ylabel="Input bit",
+	     zlabel="Probability changed")
   xs=0:bytes*8-1
   for inbit in 0:bytes*8-1
     zs=OffsetArrays.no_offset_view(allDiffs[key][bytes,1][:,inbit])
