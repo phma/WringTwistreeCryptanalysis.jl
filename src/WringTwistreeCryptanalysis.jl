@@ -16,7 +16,7 @@ export Bucket3,ins!,powerSpectrum,nonlinearity,listLinearPermutations
 export flipHighBits,nullKeySched,diffSbox,heatmapDataSbox,plotHeatmapSboxes
 export roundCompress1,roundCompress256,round2Compress1,round2Compress256,round2Stats
 export pairdiffs,cumulate!,diffTwistreeLen,diffTwistreeLen2
-export smallDiffs,readAllSmallDiffs
+export smallDiffs,readAllSmallDiffs,plotSmallDiffs
 
 # clutchMsgLen is the message length for clutch cryptanalysis.
 # Three values are used: 7776, 8192, and 10000.
@@ -702,6 +702,10 @@ end
 
 const smallDiffsIters=59049
 
+const smallDict=Dict{String,OffsetMatrix{<:OffsetMatrix{Float64}}}
+# This data structure is huge (≈160 MB). It's called "small" because it
+# is about small message differences.
+
 """
     mutable struct Diff1
 
@@ -860,13 +864,31 @@ function readSmallDiffs(file::IO)
 end
 
 function readAllSmallDiffs()
-  allDiffs=Dict{String,OffsetMatrix{<:OffsetMatrix{Float64}}}()
+  allDiffs=smallDict()
   for key in keyNames
     file=open("smallDiffs-"*key*".dat","r")
     allDiffs[key]=readSmallDiffs(file)
     close(file)
   end
   allDiffs
+end
+
+function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
+  # one round, as more would look like noise
+  sl=Figure(size=(1189,841))
+  slax=Axis3(sl[1,1])
+  xs=0:bytes*8-1
+  for inbit in 0:bytes*8-1
+    zs=OffsetArrays.no_offset_view(allDiffs[key][bytes,1][:,inbit])
+    lines!(slax,Point3d.(xs,inbit,zs))
+  end
+  filename=@sprintf "smallDiffs-%s-%d.svg" key bytes
+  save(filename,sl)
+end
+
+function plotSmallDiffs()
+  allDiffs=readAllSmallDiffs()
+  plotSmallSlices(allDiffs,"96_0",3)
 end
 
 #############################
