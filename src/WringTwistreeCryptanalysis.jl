@@ -884,6 +884,7 @@ function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
   xs=0:bytes*8-1
   for inbit in 0:bytes*8-1
     zs=OffsetArrays.no_offset_view(allDiffs[key][bytes,1][:,inbit])
+    #band!(slax,Point3d.(xs,inbit,0),Point3d.(xs,inbit,zs),transparency=true,alpha=0.2)
     lines!(slax,Point3d.(xs,inbit,zs))
   end
   filename=@sprintf "smallDiffs-%s-%d.svg" key bytes
