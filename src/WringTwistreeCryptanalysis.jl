@@ -882,7 +882,7 @@ function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
 	     ylabel="Input bit",
 	     zlabel="Probability same")
   xs=0:bytes*8-1
-  for inbit in 0:bytes*8-1
+  for inbit in xs
     zs=OffsetArrays.no_offset_view(allDiffs[key][bytes,1][:,inbit])
     #band!(slax,Point3d.(xs,inbit,0),Point3d.(xs,inbit,zs),transparency=true,alpha=0.2)
     lines!(slax,Point3d.(xs,inbit,zs))
@@ -891,9 +891,21 @@ function plotSmallSlices(allDiffs::smallDict,key::String,bytes::Integer)
   save(filename,sl)
 end
 
+function plotSmallHeatmap(allDiffs::smallDict,key::String,nrond::Integer,bytes::Integer)
+  sl=Figure(size=(1189,841))
+  slax=Axis(sl[1,1],
+	     title=(@sprintf "Wring differential cryptanalysis, %s, %d rounds, %d bytes" key nrond bytes),
+	     xlabel="Output bit",
+	     ylabel="Input bit")
+  xs=0:bytes*8-1
+  heatmap!(slax,xs,xs,OffsetArrays.no_offset_view(allDiffs[key][bytes,nrond]))
+  filename=@sprintf "smallDiffs-%s-%d-%d.svg" key nrond bytes
+  save(filename,sl)
+end
+
 function plotSmallDiffs()
   allDiffs=readAllSmallDiffs()
-  plotSmallSlices(allDiffs,"96_0",3)
+  plotSmallHeatmap(allDiffs,"96_0",1,27)
 end
 
 #############################
