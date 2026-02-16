@@ -898,7 +898,8 @@ function plotSmallHeatmap(allDiffs::smallDict,key::String,nrond::Integer,bytes::
 	     xlabel="Output bit",
 	     ylabel="Input bit")
   xs=0:bytes*8-1
-  heatmap!(slax,xs,xs,OffsetArrays.no_offset_view(allDiffs[key][bytes,nrond]))
+  hmap=heatmap!(slax,xs,xs,OffsetArrays.no_offset_view(allDiffs[key][bytes,nrond]))
+  Colorbar(sl[1,2],hmap; label="Probability same")
   filename=@sprintf "smallDiffs-%s-%d-%d.svg" key nrond bytes
   save(filename,sl)
 end
