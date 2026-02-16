@@ -906,7 +906,13 @@ end
 
 function plotSmallDiffs()
   allDiffs=readAllSmallDiffs()
-  plotSmallHeatmap(allDiffs,"96_0",1,27)
+  for key in keyNames
+    for nrond in 1:3
+      for bytes in 3:27
+	plotSmallHeatmap(allDiffs,key,nrond,bytes)
+      end
+    end
+  end
 end
 
 #############################
