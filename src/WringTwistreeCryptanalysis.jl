@@ -895,14 +895,33 @@ end
 function plotSmallHeatmap(allDiffs::smallDict,key::String,nrond::Integer,bytes::Integer)
   sl=Figure(size=(1189,841))
   slax=Axis(sl[1,1],
-	     title=(@sprintf "Wring differential cryptanalysis, %s, %d rounds, %d bytes" key nrond bytes),
-	     xlabel="Output bit",
-	     ylabel="Input bit")
+	    title=(@sprintf "Wring differential cryptanalysis, %s, %d rounds, %d bytes" key nrond bytes),
+	    xlabel="Output bit",
+	    ylabel="Input bit")
   xs=0:bytes*8-1
   hmap=heatmap!(slax,xs,xs,OffsetArrays.no_offset_view(allDiffs[key][bytes,nrond]))
   Colorbar(sl[1,2],hmap; label="Probability same")
   filename=@sprintf "smallDiffs-%s-%d-%d.svg" key nrond bytes
   save(filename,sl)
+end
+
+function plotSmallViolin(allDiffs::smallDict,key::String,nrond::Integer)
+  sv=Figure(size=(1189,841))
+  svax=Axis(sv[1,1],
+	    title=(@sprintf "Wring differential cryptanalysis, %s, %d rounds" key nrond),
+	    xlabel="Bytes",
+	    ylabel="Sameness")
+  bytes=Int16[]
+  sames=Float64[]
+  for b in 3:27
+    for s in allDiffs[key][b,nrond]
+      push!(bytes,b)
+      push!(sames,s)
+    end
+  end
+  violin!(svax,bytes,sames)
+  filename=@sprintf "smallDiffs-violin-%s-%d.svg" key nrond
+  save(filename,sv)
 end
 
 function plotSmallDiffs()
@@ -912,6 +931,7 @@ function plotSmallDiffs()
       for bytes in 3:27
 	plotSmallHeatmap(allDiffs,key,nrond,bytes)
       end
+      plotSmallViolin(allDiffs,key,nrond)
     end
   end
 end
