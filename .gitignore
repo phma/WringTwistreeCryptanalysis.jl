@@ -32,3 +32,4 @@ debug
 # Files containing plots
 *.dat
 *.svg
+*.gz
