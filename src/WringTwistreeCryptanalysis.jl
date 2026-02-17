@@ -4,6 +4,7 @@ using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
 using WringTwistree.Sboxes.Permute
 using WringTwistree.Sboxes.KeySchedule
+using Distributions,HypothesisTests
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 import Base:+

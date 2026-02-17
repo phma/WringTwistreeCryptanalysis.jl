@@ -1,11 +1,13 @@
 name = "WringTwistreeCryptanalysis"
 uuid = "ca63672b-f383-4f26-b986-22db94bfe8ca"
-authors = ["Pierre Abbat <phma@bezitopo.org>"]
 version = "0.1.0"
+authors = ["Pierre Abbat <phma@bezitopo.org>"]
 
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CpuId = "adafc99b-e345-5852-983c-f28acb93d879"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -16,6 +18,8 @@ WringTwistree = "b97f57d3-c4d5-419f-b8d9-90964b0843a1"
 [compat]
 CairoMakie = "0.15.6"
 CpuId = "0.3.1"
+Distributions = "0.25.123"
+HypothesisTests = "0.11.6"
 JSON3 = "1.14.3"
 OffsetArrays = "1.17.0"
 Printf = "1.11.0"
