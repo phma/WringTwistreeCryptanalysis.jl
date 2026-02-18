@@ -4,7 +4,7 @@ using WringTwistree,Base.Threads,OffsetArrays,CairoMakie
 using JSON3,SpecialFunctions,Roots,CpuId,Printf
 using WringTwistree.Sboxes.Permute
 using WringTwistree.Sboxes.KeySchedule
-using Distributions,HypothesisTests
+using Distributions,HypothesisTests,Statistics
 import OffsetArrays:Origin
 import WringTwistree:encryptN2!,encryptN!,findMaxOrder
 import Base:+
@@ -932,7 +932,9 @@ function plotSmallDiffs()
 	plotSmallHeatmap(allDiffs,key,nrond,bytes)
       end
       plotSmallViolin(allDiffs,key,nrond)
+      # sdev should be close to 1/√smallDiffsIters, which it is.
     end
+    @printf "%s mean %e sdev %e\n" key mean(allDiffs[key][27,3]) std(allDiffs[key][27,3])
   end
 end
 
