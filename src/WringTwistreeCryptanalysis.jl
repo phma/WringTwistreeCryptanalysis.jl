@@ -701,6 +701,12 @@ end
 # on which mix3 operates is 3 bytes, so that's where I start. This range
 # includes 8 and 16 bytes, which are common block sizes of block ciphers.
 
+# Differential cryptanalysis was invented for a different kind of cipher, in
+# which the S-boxes are fixed, key bits are exclusive-ored with the text, and
+# the diffusion step (P-box) is linear. In Wring, the S-boxes are key-dependent,
+# the diffusion step (mix3) is nonlinear, and rotbitcount is a twisted function
+# which adds more nonlinearity.
+
 const smallDiffsIters=59049
 
 const smallDict=Dict{String,OffsetMatrix{<:OffsetMatrix{Float64}}}
